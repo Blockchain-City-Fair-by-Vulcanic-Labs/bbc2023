@@ -1,14 +1,25 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-contract Avatar {
-    uint256 public number;
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-    function setNumber(uint256 newNumber) public {
-        number = newNumber;
-    }
+contract Avatar is ERC721, Ownable {
+	string private avatarBaseURI = "";
+	
+	constructor(string memory _avatarBaseURI ) ERC721("Avatar", "AVTR") Ownable(address(msg.sender)) {
+		avatarBaseURI = _avatarBaseURI;
+	}
 
-    function increment() public {
-        number++;
-    }
+	function mint(address to, uint256 tokenId) public onlyOwner {
+		_safeMint(to, tokenId);
+	}
+
+	function setBaseURI(string memory _avatarBaseURI) public onlyOwner {
+		avatarBaseURI = _avatarBaseURI;
+	}
+
+	function _baseURI() internal view override returns (string memory) {
+		return avatarBaseURI;
+	}
 }
