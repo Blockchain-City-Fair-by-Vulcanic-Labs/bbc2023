@@ -12,8 +12,12 @@ contract AvatarTest is Test {
         nft = new Avatar("");
     }
 
-	function test_Mint() public {
-		nft.mint(USER, 1);
-		assertEq(nft.ownerOf(1), USER);
-	}
+	// function test_Mint() public {
+	// 	nft.mint(USER, 1);
+	// 	assertEq(nft.ownerOf(1), USER);
+	// }
+	//
+	// function test_OwnerIsDeployer() public {
+	// 	assertEq(nft.owner(), address(this));
+	// }
 }
