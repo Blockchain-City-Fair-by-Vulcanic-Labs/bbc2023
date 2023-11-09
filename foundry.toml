@@ -4,3 +4,11 @@ out = "out"
 libs = ["lib"]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+[rpc_endpoints]
+anvil = "${ANVIL_RPC_URL}"
+mumbai = "${MUMBAI_RPC_URL}"
+mainnet = "${POLYGON_RPC_URL}"
+
+[gas_reports]
+gas_reports = ["*"]

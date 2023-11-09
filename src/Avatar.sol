@@ -41,67 +41,36 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 */
 contract Avatar is ERC721, AccessControl, Ownable {
 	string private avatarBaseURI = "";
-	mapping(address => uint256) attachments;
+	// tokenId => attachments
+	mapping(uint256 => uint256) public attachments;
 
 	// Roles
 	bytes32 public constant SUPPORT_ROLE = keccak256("SUPPORT_ROLE");
 
 	// Modifiers
-	modifier forSupport {
-		require(hasRole(SUPPORT_ROLE, msg.sender), "Caller is not a privileged support member");
+	modifier onlySupport {
+		// either a DEFAULT_ADMIN or SUPPORT team member
+		require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(SUPPORT_ROLE, msg.sender), "Caller is not a privileged support member");
 		_;
 	}
 	
 	constructor(string memory _avatarBaseURI ) ERC721("Bicol Avatar", "BVTR") Ownable(address(msg.sender)) {
 		avatarBaseURI = _avatarBaseURI;
+		_grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 	}
 
-	function _getMessageHash(string memory message) internal pure returns (bytes32) {
-		return keccak256(abi.encodePacked(message));
-	}
-
-	function _getEthSignedMessageHash(bytes32 messageHash) pure internal returns (bytes32) {
-		return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash));
-	}
-
-	function _split(bytes memory signature) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
-		require(signature.length == 65, "Invalid signature length");
-
-		assembly {
-			r := mload(add(signature, 32))
-			s := mload(add(signature, 64))
-			v := byte(0, mload(add(signature, 96)))
-		}
-	}
-
-	function _recover(bytes32 ethSignedMessageHash, bytes memory signature) pure internal returns (address) {
-		(bytes32 r, bytes32 s, uint8 v) = _split(signature);
-		return ecrecover(ethSignedMessageHash, v, r, s);
-	}
-
-
-
-	function _verifySignature(address signer, string memory message, bytes memory signature) internal pure returns (bool) {
-		bytes32 messageHash = _getMessageHash(message);
-		bytes32 ethSignedMessageHash = _getEthSignedMessageHash(messageHash);
-
-		return _recover(ethSignedMessageHash, signature) == signer;
-	}
-
-	function claim(uint256 tokenId, uint256 bitwiseOrMask, address signer, string memory message, bytes memory signature) public {
-		// make sure it's verified by the booth with a signed message
-		require(_verifySignature(signer, message, signature), "Claim not verified by booth");
+	function claim(uint256 tokenId, uint256 bitwiseOrMask) public {
 		// equip a certain attachment
 		require(_ownerOf(tokenId) == msg.sender, "You're not the owner of this token");
-		attachments[msg.sender] = attachments[msg.sender] | bitwiseOrMask;
+		attachments[tokenId] = attachments[tokenId] | bitwiseOrMask;
 	}
 
-	function reconfigure(address to, uint256 tokenId, uint256 configuration) public forSupport {
-		require(_ownerOf(tokenId) == to, "User is not the owner of this token");
-		attachments[to] = configuration;
+	function reconfigure(address user, uint256 tokenId, uint256 configuration) public onlySupport {
+		require(_ownerOf(tokenId) == user, "User is not the owner of this token");
+		attachments[tokenId] = configuration;
 	}
 
-	// function transferOwnership() public forSupport {}
+	// function transferOwnership() public onlySupport {}
 
 	/*
 	* @dev only Owner can mint more Avatars into existence
