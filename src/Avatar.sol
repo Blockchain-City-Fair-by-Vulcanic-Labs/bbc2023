@@ -65,9 +65,9 @@ contract Avatar is ERC721, AccessControl, Ownable {
 		attachments[tokenId] = attachments[tokenId] | bitwiseOrMask;
 	}
 
-	function reconfigure(address user, uint256 tokenId, uint256 configuration) public onlySupport {
+	function reconfigure(address user, uint256 tokenId, uint256 configOrMask) public onlySupport {
 		require(_ownerOf(tokenId) == user, "User is not the owner of this token");
-		attachments[tokenId] = configuration;
+		attachments[tokenId] = 0 | configOrMask;
 	}
 
 	// function transferOwnership() public onlySupport {}
